@@ -435,12 +435,19 @@ func TestDirDefines(t *testing.T) {
 }
 
 func TestMergeFlags(t *testing.T) {
+	// Use real, existing directories so sanitizeFlags does not drop the
+	// -I/-L flags for pointing at a nonexistent path. Hardcoding paths like
+	// /usr/include fails on macOS and Windows, where they do not exist.
+	incDir := t.TempDir()
+	libDir := t.TempDir()
+
 	cflags := []string{"-O2"}
 	ldflags := []string{}
-	cflags, ldflags = mergeFlags(cflags, ldflags, "-I/usr/include -lm -L/usr/lib -Wl,--as-needed")
-	assertFlagPresent(t, cflags, "-I/usr/include")
+	flags := "-I" + incDir + " -lm -L" + libDir + " -Wl,--as-needed"
+	cflags, ldflags = mergeFlags(cflags, ldflags, flags)
+	assertFlagPresent(t, cflags, "-I"+incDir)
 	assertFlagPresent(t, ldflags, "-lm")
-	assertFlagPresent(t, ldflags, "-L/usr/lib")
+	assertFlagPresent(t, ldflags, "-L"+libDir)
 	assertFlagPresent(t, ldflags, "-Wl,--as-needed")
 }
 
