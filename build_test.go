@@ -624,3 +624,37 @@ func TestDoCMake_CProject_ValidStandards(t *testing.T) {
 		t.Error("CMakeLists.txt does not contain a valid C_STANDARD")
 	}
 }
+
+func TestMissingHeaders(t *testing.T) {
+	output := `main.c:3:10: fatal error: fluidsynth.h: No such file or directory
+music.c:2:10: fatal error: 'SDL3/SDL.h' file not found
+game.c:4: error: include file 'raylib.h' not found
+main.c:3:10: fatal error: fluidsynth.h: No such file or directory
+main.c:9: error: expected ';' after expression`
+	got := missingHeaders(output)
+	want := []string{"fluidsynth.h", "SDL3/SDL.h", "raylib.h"}
+	if !slices.Equal(got, want) {
+		t.Errorf("missingHeaders() = %q, want %q", got, want)
+	}
+	if got := missingHeaders("main.c:9: error: expected ';'"); len(got) != 0 {
+		t.Errorf("missingHeaders() = %q, want none", got)
+	}
+}
+
+func TestPkgNamesForHeader(t *testing.T) {
+	cases := []struct {
+		inc  string
+		want []string
+	}{
+		{"fluidsynth.h", []string{"fluidsynth"}},
+		{"SDL3/SDL.h", []string{"sdl3"}},
+		{"zlib.h", []string{"zlib", "libzlib"}},
+		{"Foo.h", []string{"Foo", "foo", "libfoo"}},
+		{"png.h", []string{"png", "libpng"}},
+	}
+	for _, tc := range cases {
+		if got := pkgNamesForHeader(tc.inc); !slices.Equal(got, tc.want) {
+			t.Errorf("pkgNamesForHeader(%q) = %q, want %q", tc.inc, got, tc.want)
+		}
+	}
+}
