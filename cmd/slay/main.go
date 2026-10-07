@@ -300,6 +300,9 @@ func main() {
 		case "win64", "win":
 			cfg.Win64 = true
 			continue
+		case "watcom":
+			cfg.Watcom = true
+			continue
 		case "nosan", "nosanitizers":
 			cfg.NoSanitizers = true
 			continue
