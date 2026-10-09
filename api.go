@@ -44,7 +44,7 @@ func Build(sourceDir string, opts BuildOptions) (BuildResult, error) {
 	}
 
 	exe := executableName()
-	if opts.Win64 || proj.HasWin64 || opts.Watcom {
+	if opts.Win64 || proj.HasWin64 || opts.Watcom || proj.HasWatcom {
 		exe += ".exe"
 	}
 	result.OutputExecutable = exe

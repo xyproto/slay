@@ -46,7 +46,7 @@ type BuildFlags struct {
 
 // assembleFlags creates the full set of build flags for a project.
 func assembleFlags(proj Project, opts BuildOptions) BuildFlags {
-	if opts.Watcom {
+	if opts.Watcom || proj.HasWatcom {
 		return assembleWatcomFlags(proj, opts)
 	}
 	// Determine if this is win64 (from options or detected from source)
@@ -435,7 +435,7 @@ func doBuildWithDirOverrides(opts BuildOptions, proj Project) error {
 	}
 
 	exe := executableName()
-	if opts.Win64 || proj.HasWin64 || opts.Watcom {
+	if opts.Win64 || proj.HasWin64 || opts.Watcom || proj.HasWatcom {
 		exe += ".exe"
 	}
 
