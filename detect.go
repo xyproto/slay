@@ -165,6 +165,7 @@ type Project struct {
 	HasThreads        bool
 	HasWin64          bool // detected from #include <windows.h>
 	HasWatcom         bool // detected from #include <i86.h>
+	HasGBA            bool // detected from #include <tonc.h> or <gba.h>
 	HasGLFWVulkan     bool // detected from #define GLFW_INCLUDE_VULKAN
 	HasDlopen         bool // detected from #include <dlfcn.h>
 }
@@ -208,6 +209,10 @@ func detectProject() Project {
 			s := string(data)
 			if strings.Contains(s, "wcl") || strings.Contains(s, "WATCOM") {
 				p.HasWatcom = true
+				break
+			}
+			if makefileUsesGBA(s) {
+				p.HasGBA = true
 				break
 			}
 		}
@@ -274,6 +279,9 @@ func scanSourceForFlags(filename string, p *Project) {
 		}
 		if strings.Contains(line, "#include <i86.h>") {
 			p.HasWatcom = true
+		}
+		if isGBAInclude(line) {
+			p.HasGBA = true
 		}
 		// Detect win64 from includes
 		for _, wh := range []string{`#include <windows.h>`, `#include "windows.h"`, `#include<windows.h>`} {

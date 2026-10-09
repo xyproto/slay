@@ -27,6 +27,7 @@ type BuildOptions struct {
 	Zap             bool
 	Win64           bool
 	Watcom          bool
+	GBA             bool
 	NoSanitizers    bool
 	ProfileGenerate bool
 	ProfileUse      bool
@@ -35,6 +36,7 @@ type BuildOptions struct {
 // BuildFlags holds the assembled compiler and linker flags.
 type BuildFlags struct {
 	Watcom         bool
+	GBA            bool
 	Compiler       string
 	Std            string
 	ContainerImage string // if set, compile via "docker run" or "podman run" with this image
@@ -48,6 +50,9 @@ type BuildFlags struct {
 func assembleFlags(proj Project, opts BuildOptions) BuildFlags {
 	if opts.Watcom || proj.HasWatcom {
 		return assembleWatcomFlags(proj, opts)
+	}
+	if opts.GBA || proj.HasGBA {
+		return assembleGBAFlags(proj, opts)
 	}
 	// Determine if this is win64 (from options or detected from source)
 	win64 := opts.Win64 || proj.HasWin64
@@ -438,6 +443,14 @@ func doBuildWithDirOverrides(opts BuildOptions, proj Project) error {
 	if opts.Win64 || proj.HasWin64 || opts.Watcom || proj.HasWatcom {
 		exe += ".exe"
 	}
+	gba := opts.GBA || proj.HasGBA
+	if gba {
+		exe += ".gba"
+	}
+	linkOutput := exe
+	if gba {
+		linkOutput = gbaELFName(exe)
+	}
 
 	flags := assembleFlags(proj, opts)
 
@@ -448,17 +461,25 @@ func doBuildWithDirOverrides(opts BuildOptions, proj Project) error {
 
 	srcs := append([]string{proj.MainSource}, proj.DepSources...)
 	compilerOutput.Reset()
-	err := compileSources(srcs, exe, flags)
+	err := compileSources(srcs, linkOutput, flags)
 	if err != nil {
 		if retryFlags, ok := flagsForMissingHeaders(compilerOutput.String(), flags); ok {
 			fmt.Println("Found pkg-config flags for the missing headers, compiling again")
 			compilerOutput.Reset()
-			err = compileSources(srcs, exe, retryFlags)
+			err = compileSources(srcs, linkOutput, retryFlags)
 		}
 	}
 	if err != nil {
 		recommendPackage(proj.Includes)
 		platformHints(proj.Includes)
+		return err
+	}
+	if gba {
+		out, cmds, err := gbaFinish(linkOutput, exe)
+		for _, c := range cmds {
+			fmt.Println(c)
+		}
+		os.Stdout.Write(out)
 		return err
 	}
 	return nil

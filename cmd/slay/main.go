@@ -10,7 +10,7 @@ import (
 	. "github.com/xyproto/slay"
 )
 
-const versionString = "slay 1.3.7"
+const versionString = "slay 1.3.8"
 
 func printHelp() {
 	fmt.Printf(`%s
@@ -302,6 +302,9 @@ func main() {
 			continue
 		case "watcom":
 			cfg.Watcom = true
+			continue
+		case "gba":
+			cfg.GBA = true
 			continue
 		case "nosan", "nosanitizers":
 			cfg.NoSanitizers = true
