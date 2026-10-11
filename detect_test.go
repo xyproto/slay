@@ -367,3 +367,23 @@ func assertContains(t *testing.T, slice []string, val string) {
 	}
 	t.Errorf("expected %v to contain %q", slice, val)
 }
+
+func TestDetectGtkVersion(t *testing.T) {
+	withTempDir(t)
+	cases := []struct {
+		src  string
+		want int
+	}{
+		{"int main(int argc, char **argv) { gtk_init(&argc, &argv); GtkWidget *w = gtk_window_new(GTK_WINDOW_TOPLEVEL); gtk_container_add(GTK_CONTAINER(w), gtk_box_new(GTK_ORIENTATION_VERTICAL, 0)); gtk_widget_show_all(w); gtk_main(); }", 3},
+		{"static void activate(GtkApplication *app, gpointer d) { GtkWidget *w = gtk_application_window_new(app); gtk_window_set_child(GTK_WINDOW(w), gtk_box_new(GTK_ORIENTATION_VERTICAL, 0)); gtk_window_present(GTK_WINDOW(w)); }", 4},
+		{"int main(int argc, char **argv) { gtk_init(&argc, &argv); GtkWidget *w = gtk_window_new(GTK_WINDOW_TOPLEVEL); gtk_signal_connect(GTK_OBJECT(w), \"destroy\", NULL, NULL); gtk_main(); }", 2},
+		{"int main(void) { gtk_init(); GtkWidget *w = gtk_window_new(); gtk_window_present(GTK_WINDOW(w)); }", 4},
+		{"int main(void) { return 0; }", 0},
+	}
+	for i, tc := range cases {
+		writeFile(t, "main.c", "#include <gtk/gtk.h>\n"+tc.src+"\n")
+		if got := detectGtkVersion([]string{"main.c"}); got != tc.want {
+			t.Errorf("case %d: detectGtkVersion = %d, want %d", i, got, tc.want)
+		}
+	}
+}
