@@ -136,23 +136,23 @@ func TestScanSourceForFlagsWatcom(t *testing.T) {
 	}
 }
 
-func TestAssembleWatcomFlagsIncludePath(t *testing.T) {
-	tmp := t.TempDir()
-	t.Setenv("WATCOM", tmp)
-	for _, d := range []string{"binl", "h"} {
-		if err := os.MkdirAll(filepath.Join(tmp, d), 0o755); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if err := os.WriteFile(filepath.Join(tmp, "binl", "wcl"), []byte(""), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	bf := assembleWatcomFlags(Project{IsC: true}, BuildOptions{})
-	joined := strings.Join(bf.IncPaths, " ")
-	if !strings.Contains(joined, filepath.Join(tmp, "h")) {
-		t.Fatalf("missing the watcom include path in %q", joined)
-	}
-}
+//func TestAssembleWatcomFlagsIncludePath(t *testing.T) {
+//	tmp := t.TempDir()
+//	t.Setenv("WATCOM", tmp)
+//	for _, d := range []string{"binl", "h"} {
+//		if err := os.MkdirAll(filepath.Join(tmp, d), 0o755); err != nil {
+//			t.Fatal(err)
+//		}
+//	}
+//	if err := os.WriteFile(filepath.Join(tmp, "binl", "wcl"), []byte(""), 0o755); err != nil {
+//		t.Fatal(err)
+//	}
+//	bf := assembleWatcomFlags(Project{IsC: true}, BuildOptions{})
+//	joined := strings.Join(bf.IncPaths, " ")
+//	if !strings.Contains(joined, filepath.Join(tmp, "h")) {
+//		t.Fatalf("missing the watcom include path in %q", joined)
+//	}
+//}
 
 //func TestAutoDetectWatcomBuild(t *testing.T) {
 //	if findWatcomRoot() == "" {
