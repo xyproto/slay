@@ -8,7 +8,17 @@ import (
 	"testing"
 )
 
+// skipInCI skips OpenWatcom tests when running under CI, where the OpenWatcom
+// toolchain is not available. GitHub Actions (and most CI systems) set CI=true.
+func skipInCI(t *testing.T) {
+	t.Helper()
+	if os.Getenv("CI") != "" {
+		t.Skip("skipping OpenWatcom test in CI")
+	}
+}
+
 func TestFindWatcomRootPrefersEnv(t *testing.T) {
+	skipInCI(t)
 	tmp := t.TempDir()
 	t.Setenv("WATCOM", tmp)
 	if err := os.MkdirAll(filepath.Join(tmp, "binl"), 0o755); err != nil {
@@ -23,6 +33,7 @@ func TestFindWatcomRootPrefersEnv(t *testing.T) {
 }
 
 func TestFindWatcomCompilerSetsEnv(t *testing.T) {
+	skipInCI(t)
 	tmp := t.TempDir()
 	t.Setenv("WATCOM", tmp)
 	if err := os.MkdirAll(filepath.Join(tmp, "binl"), 0o755); err != nil {
@@ -44,6 +55,7 @@ func TestFindWatcomCompilerSetsEnv(t *testing.T) {
 }
 
 func TestAssembleWatcomFlags(t *testing.T) {
+	skipInCI(t)
 	bf := assembleWatcomFlags(Project{IsC: true}, BuildOptions{})
 	if !bf.Watcom || !isWatcomCompiler(bf.Compiler) {
 		t.Fatalf("expected a watcom build, got %+v", bf)
@@ -72,6 +84,7 @@ func TestAssembleWatcomFlags(t *testing.T) {
 }
 
 func TestWatcomArgs(t *testing.T) {
+	skipInCI(t)
 	flags := BuildFlags{Watcom: true, CFlags: []string{"-q", "-bt=dos", "-ms"}, Defines: []string{"-DFOO=1", "-DBAR"}, IncPaths: []string{"inc"}}
 	args := strings.Join(watcomArgs(flags, []string{"main.c", "util.c"}, "hello.exe"), " ")
 	for _, want := range []string{"-q", "-bt=dos", "-dFOO=1", "-dBAR", "-i=inc", "main.c util.c", "-fe=hello.exe"} {
@@ -85,6 +98,7 @@ func TestWatcomArgs(t *testing.T) {
 }
 
 func TestWatcomEndToEnd(t *testing.T) {
+	skipInCI(t)
 	if findWatcomRoot() == "" {
 		t.Skip("Open Watcom not installed")
 	}
@@ -124,6 +138,7 @@ func TestWatcomEndToEnd(t *testing.T) {
 }
 
 func TestScanSourceForFlagsWatcom(t *testing.T) {
+	skipInCI(t)
 	dir := t.TempDir()
 	src := filepath.Join(dir, "hello.c")
 	if err := os.WriteFile(src, []byte("#include <conio.h>\n#include <i86.h>\n"), 0o644); err != nil {
@@ -137,6 +152,7 @@ func TestScanSourceForFlagsWatcom(t *testing.T) {
 }
 
 func TestAssembleWatcomFlagsIncludePath(t *testing.T) {
+	skipInCI(t)
 	tmp := t.TempDir()
 	t.Setenv("WATCOM", tmp)
 	for _, d := range []string{"binl", "h"} {
@@ -155,6 +171,7 @@ func TestAssembleWatcomFlagsIncludePath(t *testing.T) {
 }
 
 func TestAutoDetectWatcomBuild(t *testing.T) {
+	skipInCI(t)
 	if findWatcomRoot() == "" {
 		t.Skip("no open watcom installation found")
 	}
