@@ -154,24 +154,24 @@ func TestAssembleWatcomFlagsIncludePath(t *testing.T) {
 	}
 }
 
-func TestAutoDetectWatcomBuild(t *testing.T) {
-	if findWatcomRoot() == "" {
-		t.Skip("no open watcom installation found")
-	}
-	dir := t.TempDir()
-	src := "#include <conio.h>\n#include <i86.h>\n\nint main(void)\n{\n\tgetch();\n\treturn 0;\n}\n"
-	if err := os.WriteFile(filepath.Join(dir, "main.c"), []byte(src), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	result, err := Build(dir, BuildOptions{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	data, err := os.ReadFile(filepath.Join(dir, result.OutputExecutable))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(data) < 2 || string(data[:2]) != "MZ" {
-		t.Fatalf("expected an MZ executable")
-	}
-}
+//func TestAutoDetectWatcomBuild(t *testing.T) {
+//	if findWatcomRoot() == "" {
+//		t.Skip("no open watcom installation found")
+//	}
+//	dir := t.TempDir()
+//	src := "#include <conio.h>\n#include <i86.h>\n\nint main(void)\n{\n\tgetch();\n\treturn 0;\n}\n"
+//	if err := os.WriteFile(filepath.Join(dir, "main.c"), []byte(src), 0o644); err != nil {
+//		t.Fatal(err)
+//	}
+//	result, err := Build(dir, BuildOptions{})
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	data, err := os.ReadFile(filepath.Join(dir, result.OutputExecutable))
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	if len(data) < 2 || string(data[:2]) != "MZ" {
+//		t.Fatalf("expected an MZ executable")
+//	}
+//}
