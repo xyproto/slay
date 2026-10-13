@@ -735,3 +735,20 @@ func uniqueStrings(strs []string) []string {
 	}
 	return result
 }
+
+// dedupStrings removes duplicates from a list of plain strings, preserving
+// order and the exact value of each string. Unlike uniqueStrings, it does not
+// treat the values as file system paths, so it neither rewrites separators via
+// filepath.Clean nor case-folds on case-insensitive platforms. Use it for
+// header names, package names and other non-path tokens.
+func dedupStrings(strs []string) []string {
+	seen := make(map[string]bool)
+	var result []string
+	for _, s := range strs {
+		if !seen[s] {
+			seen[s] = true
+			result = append(result, s)
+		}
+	}
+	return result
+}
