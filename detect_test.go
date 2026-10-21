@@ -387,3 +387,79 @@ func TestDetectGtkVersion(t *testing.T) {
 		}
 	}
 }
+
+func TestGetExtraMains(t *testing.T) {
+	withTempDir(t)
+	writeFile(t, "main.c", `int main() { return 0; }`)
+	writeFile(t, "preview.c", `#include <SDL3/SDL.h>
+int main(void) { SDL_Quit(); return 0; }`)
+	writeFile(t, "hat.c", `void hat(int tick) {}`)
+	writeFile(t, "foo_test.c", `int main() { return 0; }`)
+	mains := getExtraMains("main.c", []string{"foo_test.c"})
+	if len(mains) != 1 || mains[0] != "preview.c" {
+		t.Errorf("expected [preview.c], got %v", mains)
+	}
+}
+
+func TestGetDepSources_ExcludesExtraMains(t *testing.T) {
+	withTempDir(t)
+	writeFile(t, "main.c", `int main() { return 0; }`)
+	writeFile(t, "preview.c", `int main(void) { return 0; }`)
+	writeFile(t, "hat.c", `void hat(int tick) {}`)
+	deps := getDepSources("main.c", nil)
+	found := slices.Contains(deps, "preview.c")
+	if found {
+		t.Errorf("preview.c should not be a dependency source, got %v", deps)
+	}
+	if !slices.Contains(deps, "hat.c") {
+		t.Errorf("hat.c should be a dependency source, got %v", deps)
+	}
+	p := detectProject()
+	if len(p.ExtraMains) != 1 || p.ExtraMains[0] != "preview.c" {
+		t.Errorf("expected ExtraMains [preview.c], got %v", p.ExtraMains)
+	}
+}
+
+func TestParseMakeRules(t *testing.T) {
+	withTempDir(t)
+	writeFile(t, "Makefile", `CC = tcc
+CFLAGS = -Wall
+
+install: hat preview
+	./preview --test
+
+hat: main.c hat.c hat.h
+	$(CC) $(CFLAGS) -o $@ main.c hat.c -lm
+
+preview: preview.c hat.h
+	$(CC) $(CFLAGS) $(shell pkg-config --cflags sdl3) -o $@ preview.c $(shell pkg-config --libs sdl3)
+
+run: hat preview
+	./preview
+
+clean:
+	rm -f hat preview
+
+.PHONY: install run clean
+`)
+	rules, phony := parseMakeRules("", "Makefile")
+	targets := runTargets(rules, phony)
+	if len(targets) != 2 || targets[0] != "hat" || targets[1] != "preview" {
+		t.Errorf("expected [hat preview], got %v", targets)
+	}
+	if got := runProgram(rules); got != "preview" {
+		t.Errorf("runProgram = %q, want %q", got, "preview")
+	}
+	if !phony["run"] || !phony["install"] {
+		t.Errorf("expected install and run to be phony: %v", phony)
+	}
+}
+
+func TestRunTargets_NoRunRule(t *testing.T) {
+	withTempDir(t)
+	writeFile(t, "Makefile", "prog: main.c\n\tcc -o $@ main.c\n")
+	rules, phony := parseMakeRules("", "Makefile")
+	if targets := runTargets(rules, phony); len(targets) != 0 {
+		t.Errorf("expected no targets without a run: rule, got %v", targets)
+	}
+}
