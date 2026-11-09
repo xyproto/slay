@@ -8,4 +8,7 @@ require (
 	github.com/xyproto/files v1.10.8
 )
 
-require github.com/xyproto/binary v1.4.0 // indirect
+require (
+	github.com/xyproto/binary v1.4.0 // indirect
+	github.com/yuin/gopher-lua v1.1.2
+)

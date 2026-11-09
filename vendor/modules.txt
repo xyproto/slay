@@ -10,3 +10,9 @@ github.com/xyproto/env/v2
 # github.com/xyproto/files v1.10.8
 ## explicit; go 1.19
 github.com/xyproto/files
+# github.com/yuin/gopher-lua v1.1.2
+## explicit; go 1.23
+github.com/yuin/gopher-lua
+github.com/yuin/gopher-lua/ast
+github.com/yuin/gopher-lua/parse
+github.com/yuin/gopher-lua/pm

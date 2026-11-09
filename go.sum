@@ -6,3 +6,5 @@ github.com/xyproto/env/v2 v2.5.6 h1:ZDhM5caXmM0/Bjf4BHd3QkC6p0g0aXAtTwpBOS4sxyU=
 github.com/xyproto/env/v2 v2.5.6/go.mod h1:F81ZEzu15s3TWUZJ1uzBl9iNeq9zcfHvxMkQJaLZUl0=
 github.com/xyproto/files v1.10.8 h1:WddqvjjvZxLaLHhEmLdeHlr+03pHnHHMtsXGTY1D+os=
 github.com/xyproto/files v1.10.8/go.mod h1:cP7k9SE756cww4r2pN3fXOeQXtJqfpiA2b+qfVNrJCY=
+github.com/yuin/gopher-lua v1.1.2 h1:yF/FjE3hD65tBbt0VXLE13HWS9h34fdzJmrWRXwobGA=
+github.com/yuin/gopher-lua v1.1.2/go.mod h1:7aRmXIWl37SqRf0koeyylBEzJ+aPt8A+mmkQ4f1ntR8=
