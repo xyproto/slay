@@ -47,6 +47,7 @@ Actions:
   ninja       - build with ninja (falls back to cmake+ninja)
   install     - install the project (PREFIX, DESTDIR)
   pkg         - package the project into pkg/
+  tinypack    - build tiny.lua into pacman packages (CARCH, REPO, SYSROOT, PKGDEST)
   export      - export a standalone Makefile and build.sh
   script      - generate build.sh and clean.sh
   valgrind    - build and profile with valgrind
@@ -110,7 +111,7 @@ func isAction(word string) bool {
 		"valgrind", "pro", "makefile", "Makefile",
 		"ninjainstall", "ninja_install", "ninjaclean", "ninja_clean",
 		"makeinstall", "make_install", "makeclean", "make_clean",
-		"debug", "version":
+		"debug", "version", "tinypack":
 		return true
 	}
 	return false
@@ -324,7 +325,7 @@ func main() {
 		if isAction(tok) {
 			action = tok
 			// For run/pgo/rec, remaining tokens are passed through
-			if tok == "run" || tok == "pgo" || tok == "rec" {
+			if tok == "run" || tok == "pgo" || tok == "rec" || tok == "tinypack" {
 				action = tok
 				actionArgs = tokens[i+1:]
 				break
@@ -403,6 +404,16 @@ func main() {
 		exitOnErr(cfg.Install())
 	case "pkg":
 		exitOnErr(cfg.Pkg())
+	case "tinypack":
+		path := "."
+		if len(actionArgs) > 0 {
+			path = actionArgs[0]
+		}
+		files, err := TinyPack(path)
+		exitOnErr(err)
+		for _, f := range files {
+			fmt.Println(f)
+		}
 	case "export":
 		exitOnErr(cfg.Export())
 	case "script":
